@@ -544,7 +544,9 @@ namespace Foreman
 		public void LayoutGraph()
 		{
 			// TODO: Make the passthrough width configurable
-			Graph.LayoutGraph(ReduceCrossings, n => (n is ReadOnlyPassthroughNode passthrough && passthrough.SimpleDraw) ? 48 : 24 + nodeElementDictionary[n].Width);
+			Graph.LayoutGraph(ReduceCrossings,
+				n => (n is ReadOnlyPassthroughNode passthrough && passthrough.SimpleDraw) ? 0 : nodeElementDictionary[n].Width,
+				n => nodeElementDictionary[n].Height);
 			UpdateNodeVisuals();
 		}
 
