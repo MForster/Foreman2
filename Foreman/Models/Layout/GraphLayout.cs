@@ -159,14 +159,15 @@ namespace Foreman
 			return layering;
 		}
 
-		public void LayoutGraph(bool reduceCrossings, Func<ReadOnlyBaseNode, int> nodeWidth)
+		public void LayoutGraph(bool reduceCrossings, Func<ReadOnlyBaseNode, int> nodeWidth, Func<ReadOnlyBaseNode, int> nodeHeight)
 		{
 			var graph = new LayeredGraph(Normalize());
 
 			if (reduceCrossings)
 				graph.ReduceCrossings();
 
-			var locations = new CoordinateAssignment().AssignCoordinates(graph, n => nodeWidth(n.BaseNode));
+			CoordinateAssignment alg = new CoordinateAssignment() { LayerDist = 96, NodeDist = 48 };
+			var locations = alg.AssignCoordinates(graph, n => nodeWidth(n.BaseNode), n => nodeHeight(n.BaseNode));
 
 			// TODO: Should we really just ignore if there is no controller?
 			// This is probably because we're calling the layouter at the wrong time...

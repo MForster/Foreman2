@@ -27,6 +27,14 @@ namespace Foreman
 		int Layer(N node);
 	}
 
+	public static class LayeredGraphExtensions
+	{
+		public static IEnumerable<N> LayerNodes<N>(this ILayeredGraph<N> graph, int i)
+			=> Enumerable.Range(1, graph.Width(i)).Select(j => graph[i, j]);
+		public static IEnumerable<N> ColumnNodes<N>(this ILayeredGraph<N> graph, int j)
+			=> Enumerable.Range(1, graph.Height).Select(i => graph[i, j]);
+	}
+
 	/// <summary>
 	/// Implementation of an algorithm by Ulrik Brandes and Boris Köpf:
 	/// "Fast and Simple Horizontal Coordinate Assignment".
@@ -71,13 +79,23 @@ namespace Foreman
 		}
 
 		/// <summary>
+		/// Option to configure the vertical distance between layers (in addition to the height of nodes).
+		/// </summary>
+		public int LayerDist { get; set; }
+
+		/// <summary>
+		/// Option to configure the horizontal distance between nodes (in addition to the width of the nodes.
+		/// </summary>
+		public int NodeDist { get; set; }
+
+		/// <summary>
 		/// Computes coordinates for a layered graph.
 		/// </summary>
 		/// <typeparam name="N">the type of the graph nodes</typeparam>
 		/// <param name="graph">the graph</param>
 		/// <param name="nodeWidth">a function that returns the width of a node</param>
 		/// <returns>a dictionary that contains coordinates for all nodes</returns>
-		public IDictionary<N, Point> AssignCoordinates<N>(ILayeredGraph<N> graph, Func<N, int> nodeWidth) where N : class
+		public IDictionary<N, Point> AssignCoordinates<N>(ILayeredGraph<N> graph, Func<N, int> nodeWidth, Func<N, int> nodeHeight) where N : class
 		{
 			var layouts = new Dictionary<(bool, bool), Dictionary<N, int>>();
 
@@ -94,19 +112,28 @@ namespace Foreman
 
 			var minWidth = layouts.Values.Select(l => l.Values.DefaultIfEmpty(0).Max()).Min();
 
-			int x(N node)
-			{
-				return new[] {
+			var x = graph.Nodes.ToDictionary(node => node, node => new[] {
 					layouts[(false, false)][node],
 					minWidth - layouts[(false, true)][node],
 					layouts[(true, false)][node],
 					minWidth - layouts[(true, true)][node]
-				}.OrderBy(val => val).Skip(1).Take(2).Sum() / 2;
+				}.OrderBy(val => val).Skip(1).Take(2).Sum() / 2);
+
+			var minX = graph.ColumnNodes(1).Select(n => x[n] - nodeWidth(n) / 2).DefaultIfEmpty(0).Min();
+
+			var y = new Dictionary<N, int>();
+			int layerY = 0;
+			foreach (var i in Range(1, graph.Height))
+			{
+				var layerHeight = graph.LayerNodes(i).Select(nodeHeight).Max();
+
+				foreach (var n in graph.LayerNodes(i))
+					y[n] = layerY + layerHeight / 2;
+
+				layerY += layerHeight + LayerDist;
 			}
 
-			return graph.Nodes.ToDictionary(
-				node => node,
-				node => new Point(x(node), 192 * graph.Layer(node))); // TODO: Make vertical distance configurable
+			return graph.Nodes.ToDictionary(node => node, node => new Point(x[node] - minX, y[node]));
 		}
 
 		private IEnumerable<int> Range(int from, int to) => (to < from) ? Enumerable.Empty<int>() : Enumerable.Range(from, to - from + 1);
@@ -209,7 +236,7 @@ namespace Foreman
 						if (graph.Pos(w) > 1)
 						{
 							var predW = graph[graph.Layer(w), graph.Pos(w) - 1];
-							var delta = (nodeWidth(w) + nodeWidth(predW)) / 2;
+							var delta = (nodeWidth(w) + nodeWidth(predW)) / 2 + NodeDist;
 
 							var u = root[predW];
 							placeBlock(u);
