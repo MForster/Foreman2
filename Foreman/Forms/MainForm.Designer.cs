@@ -59,6 +59,7 @@
 			this.GraphLayoutGroupBox = new System.Windows.Forms.GroupBox();
 			this.GraphLayoutTable = new System.Windows.Forms.TableLayoutPanel();
 			this.LayoutGraphButton = new System.Windows.Forms.Button();
+			this.ContinuousLayoutCheckBox = new System.Windows.Forms.CheckBox();
 			this.ReduceCrossingsCheckBox = new System.Windows.Forms.CheckBox();
 			this.VersionLabel = new System.Windows.Forms.Label();
 			this.MainLayoutPanel.SuspendLayout();
@@ -556,6 +557,7 @@
 			this.GraphLayoutTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this.GraphLayoutTable.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
 			this.GraphLayoutTable.Controls.Add(this.LayoutGraphButton, 0, 0);
+			this.GraphLayoutTable.Controls.Add(this.ContinuousLayoutCheckBox, 0, 1);
 			this.GraphLayoutTable.Controls.Add(this.ReduceCrossingsCheckBox, 0, 2);
 			this.GraphLayoutTable.Location = new System.Drawing.Point(3, 16);
 			this.GraphLayoutTable.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
@@ -565,7 +567,7 @@
 			this.GraphLayoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.GraphLayoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.GraphLayoutTable.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
-			this.GraphLayoutTable.Size = new System.Drawing.Size(120, 66);
+			this.GraphLayoutTable.Size = new System.Drawing.Size(120, 83);
 			this.GraphLayoutTable.TabIndex = 1;
 			// 
 			// LayoutGraphButton
@@ -579,11 +581,24 @@
 			this.LayoutGraphButton.UseVisualStyleBackColor = true;
 			this.LayoutGraphButton.Click += new System.EventHandler(this.LayoutGraphButton_Click);
 			// 
+			// ContinuousLayoutCheckBox
+			// 
+			this.ContinuousLayoutCheckBox.AutoSize = true;
+			this.ContinuousLayoutCheckBox.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.ContinuousLayoutCheckBox.Location = new System.Drawing.Point(3, 29);
+			this.ContinuousLayoutCheckBox.Margin = new System.Windows.Forms.Padding(3, 0, 3, 0);
+			this.ContinuousLayoutCheckBox.Name = "ContinuousLayoutCheckBox";
+			this.ContinuousLayoutCheckBox.Size = new System.Drawing.Size(114, 17);
+			this.ContinuousLayoutCheckBox.TabIndex = 2;
+			this.ContinuousLayoutCheckBox.Text = "Continuous Layout";
+			this.ContinuousLayoutCheckBox.UseVisualStyleBackColor = true;
+			this.ContinuousLayoutCheckBox.CheckedChanged += new System.EventHandler(this.ContinuousLayoutCheckBox_CheckedChanged);
+			// 
 			// ReduceCrossingsCheckBox
 			// 
 			this.ReduceCrossingsCheckBox.AutoSize = true;
 			this.ReduceCrossingsCheckBox.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.ReduceCrossingsCheckBox.Location = new System.Drawing.Point(3, 29);
+			this.ReduceCrossingsCheckBox.Location = new System.Drawing.Point(3, 46);
 			this.ReduceCrossingsCheckBox.Margin = new System.Windows.Forms.Padding(3, 0, 3, 0);
 			this.ReduceCrossingsCheckBox.Name = "ReduceCrossingsCheckBox";
 			this.ReduceCrossingsCheckBox.Size = new System.Drawing.Size(114, 17);
@@ -673,6 +688,7 @@
 		private System.Windows.Forms.Button LayoutGraphButton;
 		private System.Windows.Forms.GroupBox GraphLayoutGroupBox;
 		private System.Windows.Forms.TableLayoutPanel GraphLayoutTable;
+		private System.Windows.Forms.CheckBox ContinuousLayoutCheckBox;
 		private System.Windows.Forms.CheckBox ReduceCrossingsCheckBox;
 	}
 }

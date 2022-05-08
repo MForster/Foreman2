@@ -36,6 +36,7 @@ namespace Foreman
 		public bool DynamicLinkWidth = false;
 		public bool LockedRecipeEditPanelPosition = true;
 		public bool FlagOUSuppliedNodes = false; //if true, will add a flag for over or under supplied nodes
+		public bool ContinuousGraphLayout = false;
 		public bool ReduceCrossings = false;
 		public bool SmartNodeDirection { get; set; }
 
@@ -545,11 +546,15 @@ namespace Foreman
 		{
 			// TODO: Make the passthrough width configurable
 			Graph.LayoutGraph(ReduceCrossings, n => (n is ReadOnlyPassthroughNode passthrough && passthrough.SimpleDraw) ? 48 : 24 + nodeElementDictionary[n].Width);
+			layoutNeeded = false;
 			UpdateNodeVisuals();
 		}
 
 		public new void Paint(Graphics graphics, bool FullGraph = false)
 		{
+			if (ContinuousGraphLayout && layoutNeeded && currentDragOperation == DragOperation.None)
+				LayoutGraph();
+
 			//update visibility of all elements
 			if (FullGraph)
 				foreach (GraphElement element in GetPaintingOrder())
@@ -638,6 +643,7 @@ namespace Foreman
 
 		private void Graph_NodeValuesUpdated(object sender, EventArgs e)
 		{
+			MaybeUpdateGraphLayout();
 			UpdateNodeVisuals();
 		}
 
@@ -653,6 +659,8 @@ namespace Foreman
 
 			supplier.RequestStateUpdate();
 			consumer.RequestStateUpdate();
+
+			MaybeUpdateGraphLayout();
 			Invalidate();
 		}
 
@@ -667,6 +675,8 @@ namespace Foreman
 
 			supplier.RequestStateUpdate();
 			consumer.RequestStateUpdate();
+
+			MaybeUpdateGraphLayout();
 			Invalidate();
 		}
 
@@ -677,6 +687,8 @@ namespace Foreman
 			nodeElements.Remove(element);
 			selectedNodes.Remove(element);
 			element.Dispose();
+
+			MaybeUpdateGraphLayout();
 			Invalidate();
 		}
 
@@ -696,7 +708,15 @@ namespace Foreman
 
 			nodeElementDictionary.Add(e.node, element);
 			nodeElements.Add(element);
+
+			MaybeUpdateGraphLayout();
 			Invalidate();
+		}
+
+		private bool layoutNeeded = false;
+		private void MaybeUpdateGraphLayout()
+		{
+			layoutNeeded = true;
 		}
 
 		//----------------------------------------------Mouse events
@@ -866,6 +886,8 @@ namespace Foreman
 						MouseDownElement.Dragged(graph_location);
 						Invalidate();
 					}
+
+					layoutNeeded = true;
 
 					//accept middle mouse button for view dragging purposes (while dragging item or selection)
 					if ((downButtons & MouseButtons.Middle) == MouseButtons.Middle)

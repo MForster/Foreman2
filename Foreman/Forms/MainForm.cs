@@ -602,9 +602,18 @@ namespace Foreman
 			GraphViewer.LayoutGraph();
 		}
 
+		private void ContinuousLayoutCheckBox_CheckedChanged(object sender, EventArgs e)
+		{
+			GraphViewer.ContinuousGraphLayout = ContinuousLayoutCheckBox.Checked;
+			if (GraphViewer.ContinuousGraphLayout)
+				GraphViewer.LayoutGraph();
+		}
+
 		private void ReduceCrossingsCheckBox_CheckedChanged(object sender, EventArgs e)
 		{
 			GraphViewer.ReduceCrossings = ReduceCrossingsCheckBox.Checked;
+			if (GraphViewer.ContinuousGraphLayout && GraphViewer.ReduceCrossings)
+				GraphViewer.LayoutGraph();
 		}
 
 		//---------------------------------------------------------double buffering commands
