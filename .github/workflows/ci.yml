@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-2019
+    steps:
+      - uses: actions/checkout@v2
+      - uses: microsoft/setup-msbuild@v1.1
+      - uses: NuGet/setup-nuget@v1
+      - run: nuget restore Foreman.sln 
+      - run: msbuild Foreman\Foreman.csproj -t:rebuild -property:Configuration=Release
