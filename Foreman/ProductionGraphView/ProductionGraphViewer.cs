@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Data;
-using System.Linq;
-using System.Windows.Forms;
-using System.Runtime.Serialization;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
-using Newtonsoft.Json;
-using System.Text;
+using System.Drawing;
 using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Foreman
 {
@@ -36,7 +36,7 @@ namespace Foreman
 		public bool DynamicLinkWidth = false;
 		public bool LockedRecipeEditPanelPosition = true;
 		public bool FlagOUSuppliedNodes = false; //if true, will add a flag for over or under supplied nodes
-
+		public bool ReduceCrossings = false;
 		public bool SmartNodeDirection { get; set; }
 
 		public DataCache DCache { get; set; }
@@ -213,8 +213,8 @@ namespace Foreman
 
 			int lastNodeWidth = 0;
 			NodeDirection newNodeDirection = (originElement == null || !SmartNodeDirection) ? Graph.DefaultNodeDirection :
-				draggedLinkElement.Type != BaseLinkElement.LineType.UShape ? originElement.DisplayedNode.NodeDirection :
-				originElement.DisplayedNode.NodeDirection == NodeDirection.Up ? NodeDirection.Down : NodeDirection.Up;
+							draggedLinkElement.Type != BaseLinkElement.LineType.UShape ? originElement.DisplayedNode.NodeDirection :
+							originElement.DisplayedNode.NodeDirection == NodeDirection.Up ? NodeDirection.Down : NodeDirection.Up;
 
 			void ProcessNodeRequest(object o, RecipeRequestArgs recipeRequestArgs)
 			{
@@ -363,8 +363,8 @@ namespace Foreman
 			foreach (PassthroughNodeElement passthroughNode in selectedNodes)
 			{
 				NodeDirection newNodeDirection = !SmartNodeDirection ? Graph.DefaultNodeDirection :
-					draggedLinkElement.Type != BaseLinkElement.LineType.UShape ? passthroughNode.DisplayedNode.NodeDirection :
-					passthroughNode.DisplayedNode.NodeDirection == NodeDirection.Up ? NodeDirection.Down : NodeDirection.Up;
+								draggedLinkElement.Type != BaseLinkElement.LineType.UShape ? passthroughNode.DisplayedNode.NodeDirection :
+								passthroughNode.DisplayedNode.NodeDirection == NodeDirection.Up ? NodeDirection.Down : NodeDirection.Up;
 
 				Item passthroughItem = ((ReadOnlyPassthroughNode)passthroughNode.DisplayedNode).PassthroughItem;
 
@@ -488,8 +488,8 @@ namespace Foreman
 			Point screenOriginPoint = GraphToScreen(new Point(bNodeElement.X - (bNodeElement.Width / 2), bNodeElement.Y));
 			screenOriginPoint = new Point(screenOriginPoint.X - editPanel.Width, screenOriginPoint.Y - (editPanel.Height / 2));
 			Point offset = new Point(
-				(int)(Math.Min(Math.Max(0, 25 - screenOriginPoint.X), this.Width - screenOriginPoint.X - editPanel.Width - bNodeElement.Width - 25)),
-				(int)(Math.Min(Math.Max(0, 25 - screenOriginPoint.Y), this.Height - screenOriginPoint.Y - editPanel.Height - 25)));
+							(int)(Math.Min(Math.Max(0, 25 - screenOriginPoint.X), this.Width - screenOriginPoint.X - editPanel.Width - bNodeElement.Width - 25)),
+							(int)(Math.Min(Math.Max(0, 25 - screenOriginPoint.Y), this.Height - screenOriginPoint.Y - editPanel.Height - 25)));
 
 			ViewOffset = Point.Add(ViewOffset, new Size((int)(offset.X / ViewScale), (int)(offset.Y / ViewScale)));
 			UpdateGraphBounds();
@@ -524,8 +524,8 @@ namespace Foreman
 				recipeEditPanelOriginPoint.Y += editPanel.Height / 2 - 125;
 				recipeEditPanelOriginPoint.X -= recipePanel.Width + 5;
 				Point offset = new Point(
-					(int)(Math.Min(Math.Max(0, 25 - recipeEditPanelOriginPoint.X), this.Width - recipeEditPanelOriginPoint.X - editPanel.Width)),
-					(int)(Math.Min(Math.Max(0, 25 - recipeEditPanelOriginPoint.Y), this.Height - recipeEditPanelOriginPoint.Y - editPanel.Height - 25)));
+								(int)(Math.Min(Math.Max(0, 25 - recipeEditPanelOriginPoint.X), this.Width - recipeEditPanelOriginPoint.X - editPanel.Width)),
+								(int)(Math.Min(Math.Max(0, 25 - recipeEditPanelOriginPoint.Y), this.Height - recipeEditPanelOriginPoint.Y - editPanel.Height - 25)));
 
 				editPanel.Location = Point.Add(recipeEditPanelOriginPoint, (Size)offset);
 				recipePanel.Location = new Point(editPanel.Location.X + editPanel.Width + 5, editPanel.Location.Y);
@@ -666,6 +666,15 @@ namespace Foreman
 			e.Graphics.TranslateTransform(ViewOffset.X, ViewOffset.Y);
 
 			Paint(e.Graphics, false);
+		}
+
+		public void LayoutGraph()
+		{
+			// TODO: Make the passthrough width configurable
+			Graph.LayoutGraph(ReduceCrossings,
+				n => (n is ReadOnlyPassthroughNode passthrough && passthrough.SimpleDraw) ? 0 : nodeElementDictionary[n].Width,
+				n => nodeElementDictionary[n].Height);
+			UpdateNodeVisuals();
 		}
 
 		public new void Paint(Graphics graphics, bool FullGraph = false)
@@ -922,14 +931,14 @@ namespace Foreman
 								AddItem(screenPoint, ScreenToGraph(e.Location));
 							})));
 						rightClickMenu.MenuItems.Add(new MenuItem("Add Recipe",
-							new EventHandler((o, ee) =>
-							{
-								AddRecipe(screenPoint, null, ScreenToGraph(e.Location), NewNodeType.Disconnected);
-							})));
+										new EventHandler((o, ee) =>
+										{
+											AddRecipe(screenPoint, null, ScreenToGraph(e.Location), NewNodeType.Disconnected);
+										})));
 						rightClickMenu.Show(this, e.Location);
 
 					}
-					else if (currentDragOperation != DragOperation.Selection)
+					else if  (currentDragOperation != DragOperation.Selection)
 					{
 
 						element?.MouseUp(graph_location, e.Button, (currentDragOperation == DragOperation.Item));
@@ -1386,10 +1395,10 @@ namespace Foreman
 			}
 
 			VisibleGraphBounds = new Rectangle(
-				(int)(-Width / (2 * ViewScale) - ViewOffset.X),
-				(int)(-Height / (2 * ViewScale) - ViewOffset.Y),
-				(int)(Width / ViewScale),
-				(int)(Height / ViewScale));
+							(int)(-Width / (2 * ViewScale) - ViewOffset.X),
+							(int)(-Height / (2 * ViewScale) - ViewOffset.Y),
+							(int)(Width / ViewScale),
+							(int)(Height / ViewScale));
 		}
 
 		private void ProductionGraphViewer_Resize(object sender, EventArgs e)
@@ -1573,7 +1582,7 @@ namespace Foreman
 					else
 					{
 						//errors found. even though the name fits, but the preset seems to be the wrong one. Proceed with searching for best-fit
-						if (errors != null)
+						if  (errors != null)
 						{
 							presetErrors.Add(errors);
 						}
